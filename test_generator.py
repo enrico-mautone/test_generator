@@ -12,14 +12,12 @@ def create_test_file(module_name, functions, output_dir):
     """Crea un file di test per il modulo specificato"""
     test_filename = os.path.join(output_dir, f"test_{module_name}.py")
     with open(test_filename, "w", encoding="utf-8") as test_file:
-        test_file.write("import unittest\n")
-        test_file.write(f"from {module_name} import *\n\n")
+        test_file.write(f"import {module_name}\n\n")
         
         for func in functions:
-            test_file.write(f"class Test{func.capitalize()}(unittest.TestCase):\n")
-            test_file.write(f"    def test_{func}(self):\n")
-            test_file.write(f"        # TODO: Implement test for {func}\n")
-            test_file.write(f"        pass\n\n")
+            test_file.write(f"def test_{func}():\n")
+            test_file.write(f"    # TODO: Implement test for {func}\n")
+            test_file.write(f"    assert {module_name}.{func}() is not None\n\n")
     
     print(f"Creato {test_filename}")
 
@@ -38,9 +36,14 @@ def main():
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     
+    exclude_dirs = {'venv', '.venv', '__pycache__'}
+    
     for root, _, files in os.walk(source_dir):
+        # Escludi le directory non necessarie
+        if any(exclude_dir in root for exclude_dir in exclude_dirs):
+            continue
         for file in files:
-            if file.endswith(".py"):
+            if file.endswith(".py") and not root.startswith(output_dir):
                 module_name = os.path.splitext(file)[0]
                 filepath = os.path.join(root, file)
                 functions = parse_functions_from_file(filepath)
